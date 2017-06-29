@@ -1,0 +1,73 @@
+Analysis of data, confidence intervals and concentration calculation
+--------------------------------------------------------------------------
+
+Date: `r Sys.time()`
+-----------------------------------------
+
+Initial Data:
+-----------------------------------------
+````{r, echo=FALSE}
+x <- file()
+knitr::kable(x, format = "markdown")
+````
+
+Concentration:
+-------------------------------------------------------------------------------------------
+````{r, echo=FALSE, results='asis'}
+x <- fileconc()
+knitr::kable(x, format = "markdown")
+````
+
+Combine Replicates:
+------------------------------------------------------------------------------------
+````{r, echo=FALSE, results='asis'}
+x <- creps()
+knitr::kable(x,format = "markdown")
+````
+
+95% Confidence Interval:
+------------------------------------------------------------------------------------
+````{r, echo=FALSE, results='asis'}
+x <- conf.int()
+knitr::kable(x, format = "markdown")
+````
+
+Model Implementation:
+-------------------------------------------------------------------------
+````{r, echo=FALSE, results='asis'}
+x <- apta.all()
+knitr::kable(x, digits = 4, format = "markdown")
+````
+
+Calculated Concentration:
+------------------------------------------------------------------------------------------------------------------
+````{r, echo=FALSE, results='asis'}
+if (aptac()=="None"){
+  text1()
+}
+if ((aptac()=="lm")|| (aptac()=="loglm")){
+x <- calc.conc()
+x
+}
+````
+
+Settings used during implementation:
+--------------------------------------------
+````{r, echo=FALSE, results='asis'}
+cat("Select the type of file: ", input$filetype, "\n\n")
+cat("Select the method to combine replicates: ", input$calc, "\n\n")
+cat("Select the model to analyse: ", input$met.all, "\n\n")
+cat("Select the glm for glm and lm for other: ", input$res.all, "\n\n")
+cat("Select fluorescence value to compute concentration: ", input$fluo, "\n\n")
+cat("Select the model to compute the concentration: ", input$Mod.conc, "\n\n")
+````
+
+Session Information:
+--------------------------------------------
+````{r, echo=FALSE, results='asis'}
+sessionInfo("AptaKan")
+````
+
+
+
+

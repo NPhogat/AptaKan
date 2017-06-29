@@ -1,0 +1,13 @@
+import(Biobase, methods, ggplot2, stats, RColorBrewer, graphics)
+
+importFrom(shiny, runApp)
+importFrom(gridExtra, arrangeGrob, cbind.gtable, ellipseGrob, grid.arrange, grid.ellipse, grid.ngon,
+           grid.table, marrangeGrob, ngonGrob, polygon_regular, rbind.gtable,
+           tableGrob, ttheme_default, ttheme_minimal)
+importFrom(robustbase, BYlogreg, colMedians,lmrob)
+
+exportClasses(aptakandt)
+
+export(ReadAptakan, CombineReps, aptamodel, aptamodelall, aptakanplot, aptakanplotall, aptaconc,
+       apta.conf, apta.diagplot, apta.dplot, apta.dplotall, apta.Kd, apta.Kdall,
+       analysis.gui, Kd.gui)

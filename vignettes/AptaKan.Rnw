@@ -1,0 +1,610 @@
+%\VignetteIndexEntry{AptaKan: Analysis of data of fluorescent bioassays}
+%\VignetteDepends{stats,RColorBrewer,Biobase,methods,AptaKan}
+%\VignetteKeywords{AptaKan, Combine replicates, Model implementation, Concentration, Kd, Confidence intervals}
+%\VignettePackage{AptaKan}
+%
+\documentclass[11pt]{article}
+\usepackage{geometry}\usepackage{color}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.75}
+\usepackage[%
+pdftitle={AptaKan: Analysis of data of fluorescent bioassays},%
+pdfauthor={Navneet Phogat and Matthias Kohl},%
+pdfsubject={AptaKan},%
+pdfkeywords={AptaKan, Combine Replicates, Model implementation, Concentration, Kd, Confidence intervals},%
+pagebackref,bookmarks,colorlinks,linkcolor=darkblue,citecolor=darkblue,%
+pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
+%
+\markboth{\sl Package ``{\tt AptaKan}''}{\sl Package ``{\tt AptaKan}''}
+%
+%------------------------------------------------------------------------------
+\newcommand{\code}[1]{{\tt #1}}
+\newcommand{\pkg}[1]{{\tt "#1"}}
+\newcommand{\myinfig}[2]{%
+%  \begin{figure}[htbp]
+    \begin{center}
+      \includegraphics[width = #1\textwidth]{#2}
+%      \caption{\label{#1}#3}
+    \end{center}
+%  \end{figure}
+}
+%------------------------------------------------------------------------------
+%
+%------------------------------------------------------------------------------
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\SweaveOpts{keep.source = TRUE, eval = TRUE, include = FALSE}
+%-------------------------------------------------------------------------------
+\title{AptaKan: Analysis of the data of fluorescent bioassays}
+%-------------------------------------------------------------------------------
+\author{Navneet Phogat and Matthias Kohl\\
+Institute of Precision Medicine\\
+Hochschule Furtwangen University, Germany\medskip\\
+}
+\maketitle
+\tableofcontents
+%-------------------------------------------------------------------------------
+\section{Introduction}
+%-------------------------------------------------------------------------------
+The package \pkg{AptaKan} has the functions as well as in - built shinyapps based Graphical User
+Interfaces (GUIs). The package \pkg{AptaKan} divided in three parts on the basis of the functions:
+First, Reading the fluorescent data and Combining the replicates. Second, Computation of confidence
+intervals, Analysis of data on the basis of different statistical models and Computation of the
+concentration. Third, Computation of the dissociation constant.
+
+User may load the \pkg{AptaKan} package.
+<<AptaKan>>=
+library(AptaKan)
+@
+
+%----------------------------------------------------
+\section {S4 Class \code{aptakandt}}
+%----------------------------------------------------
+The S4 Class \code{aptakandt} is defined to contain the data to control the flow of the data in package \pkg{AptaKan}. All the slots of Class \code{aptakandt} contains the data in the form of an object of Class \code{data.frame}. The Class \code{aptakandt} has six slots, which includes
+\code{initialData} to contain the initial data of fluorescence except concentration, \code{crepData} to contain the results of the function \code{CombineReps}, \code{concentration} to contain the concentration, \code{modelData} to contain the results of implementation of different statistical models of analysis, \code{confData} to contain the results of confidence intervals and \code{KdData} to contain the results of computation of the dissociation constant.
+
+%-------------------------------------------------------------------------------
+\section{Reading the fluorescent data}
+%-------------------------------------------------------------------------------
+The \code{ReadAptakan} function is based on the functions \code{read.csv} and \code{read.table} of the package \pkg{utils}. The function \code{ReadAptakan} reads in .csv as well as
+.txt (Tab delimited) files of the fluorescent data, generated through the fluorescent
+bioaasays. The format of both types of files is provided in the folder exData, which is
+present in the folder inst of the package \pkg{AptaKan}: Aptakandata.csv, Aptakandata.txt,
+aptakdnew.csv and aptakdnew.txt. The file aptakdnew.csv and aptakdnew.txt are to be implemented,
+while computing the dissociation constant (Kd), which requires the data till saturation point.
+The final data will be stored in the new S4 Class \code{aptakandt}. The following is the example
+to read in the .csv file:
+
+<<ReadAptakan, results=hide>>=
+#library(AptaKan) # load the Aptakan package
+##To read the .csv file
+file.csv <- system.file("exData", "Aptakandata.csv", package = "AptaKan")
+read.datacsv <- ReadAptakan(file.csv)
+## To express all the data
+read.datacsv
+## To express the initial data (all the data read in, except concentration)
+slot(read.datacsv,"initialData")
+## To express the concentration data (from the data read in)
+slot(read.datacsv,"concentration")
+@
+
+The following is the example to read in the .txt file:
+<<ReadAptaKan, results=hide>>=
+## To read the .txt file
+file.txt <- system.file("exData", "Aptakandata.txt", package = "AptaKan")
+read.datatxt <- ReadAptakan(file.txt, type = ".txt")
+read.datatxt ## to express all the data
+## To express the initial data (except concentration)
+slot(read.datatxt, "initialData")
+## To express the concentration data
+slot(read.datatxt, "concentration")
+@
+
+%-------------------------------------------------------------------------------
+\section{Combine the replicates}
+%-------------------------------------------------------------------------------
+The function \code{CombineReps} combine the technical replicates (on the basis of mean or median) as
+well as compute the standard deviation of an object of the Class \code{aptakandt}, which are produced
+as an output of the function \code{ReadAptakan}. The examples are shown for the data read in the .csv
+file format. But, in a similar way, can also be implemented on the data, read in from the .txt file.
+Following is the example to combine the technical replicates on the basis of mean:
+
+<<CombineReps, results=hide>>=
+###2. To combine the technical replicates, on the basis of mean
+cr.mean <- CombineReps(read.datacsv)
+cr.mean ## To express all the data
+@
+
+<<CombineReps>>=
+slot(cr.mean,"crepData")  ##To express the combined replicates
+@
+
+Following is the example to combine the technical replicates on the basis of the median:
+<<CombineReps, results=hide>>=
+##To combine the replicates on the basis of median
+cr.median <- CombineReps(read.datacsv, calc = "Median")
+cr.median ##To express the overall result
+slot(cr.median,"crepData") ##Toexpress the combined replicates
+@
+
+Following is the example to compute the standard deviation within the replicates:
+<<CombineReps, results=hide>>=
+##To compute the standard deviation
+cr.sd <- CombineReps(read.datacsv, calc = "sd")
+cr.sd
+@
+
+<<CombineReps>>=
+## To visualise the standard deviation
+slot(cr.sd,"crepData")
+@
+
+%-------------------------------------------------------------------------------
+\section{Compute the confidence intervals}
+%-------------------------------------------------------------------------------
+The function \code{apta.conf} computes the confidence intervals of the combined replicates. The function \code{apta.conf} can be implemented on an object of Class \code{aptakandt}, which is produced as an output from the function \code{CombineReps}. Following is the example to compute the confidence interval by implementing the function \code{apta.conf}:
+
+<<apta.conf, results = hide>>=
+###3. 95% Confidence intervals
+conf.mean <- apta.conf(cr.mean)
+conf.mean ##To visualise all the data
+@
+
+<<apta.conf>>=
+## To express the confidence intervals
+slot(conf.mean,"confData")
+@
+
+%-------------------------------------------------------------------------------
+\section{To implement the different statistical models to analyse the data}
+%-------------------------------------------------------------------------------
+The function \code{aptamodelall} allows the user to analyse the data on the basis of different
+models, including linear model, log linear model, robust linear model, log robust linear model
+and generalised linear model. It provides the different values of r-square, adj.rsquare, intercept
+and slope in case of linear, log linear, robust linear and log robust linear models as well as the
+values of AIC, intercept and slope in case of generalised linear model. The function
+\code{aptamodelall} is based on the function \code{aptamodel} and can be implemented on
+an object of class \code{aptakandt}, which is produced as an output from the function \code{CombineReps}. The function \code{aptamodel} is described in the section auxilliary functions. The examples are shown to implement the function \code{aptamodelall} on combined replicates (combined on the basis of mean), but, in similar way, the function \code{aptamodelall} can also be implemented on the combined replicates, which are combined on the basis of meadian. Following is the example to analyse the data on the basis of linear (lm) model:
+
+<<aptamodelall, results=hide>>=
+##To analyse the data on the basis of linear model
+lm.result.all <- aptamodelall(cr.mean)
+##To express all the resulting data
+lm.result.all
+@
+
+<<aptamodelall>>=
+##To express the modelData, which contains the final result
+slot(lm.result.all,"modelData")
+@
+
+Following is the example to analyse the data on the basis of the log linear model:
+<<aptamodelall, results = hide>>=
+## To analyse the data on the basis of log linear model
+loglm.result.all <- aptamodelall(cr.mean, method = "loglm")
+## To express all the resulting data
+loglm.result.all
+@
+
+
+<<aptamodelall>>=
+## To express the modelData, which contains the resulting data
+slot(loglm.result.all,"modelData")
+@
+
+Following is the example to analyse the data on the basis of the robust linear model:
+<<aptamodelall, results = hide>>=
+## To analyse the data on the basis of robust linear model
+roblm.result.all <- aptamodelall(cr.mean, method = "roblm")
+## To express all the resulting data
+roblm.result.all
+@
+
+<<aptamodelall>>=
+##To express the modelData, which contains the resulting data
+slot(roblm.result.all,"modelData")
+@
+
+Following is the example to analyse the data on the basis of the log robust linear model:
+<<aptamodelall, results = hide>>=
+## To analyse the data on the basis of log robust linear model
+logroblm.result.all <- aptamodelall(cr.mean, method = "logroblm")
+## To express all the resulting data
+logroblm.result.all
+@
+
+<<aptamodelall>>=
+## To express the modelData, which contains the resulting data
+slot(logroblm.result.all,"modelData")
+@
+
+Following is the example to analyse the data on the basis of the glm model:
+<<aptamodelall, results = hide>>=
+## To analyse the data on the basis of generalised linear model
+glm.result.all <- aptamodelall(cr.mean, method = "glm", result = "glm")
+## To express all the resulting data
+glm.result.all
+@
+
+<<aptamodelall>>=
+## To express the modelData, which contains the resulting data
+slot(glm.result.all,"modelData")
+@
+
+%-------------------------------------------------------------------------------
+\section{To generate the plots of the analysis of the data}
+%-------------------------------------------------------------------------------
+The function \code{aptakanplotall} can be implemented togenerate the plots of the analysis of the
+data, on the basis of the different statistical models, including linear model, log linear model,
+robust linear model and log linear robust model. The function \code{aptakanplotall} is based on the
+function \code{aptakanplot}, which is an auxilliary function to the function \code{aptakanplotall}. The function \code{aptakanplotall} can generate all the plots, on the basis of one model, of all the combined replicates in a single step. The plots will be generated in pdf format. Following is the code to generate all the plots, using the function \code{aptakanplotall}.
+
+<<aptakanplotall, eval=FALSE>>=
+## Plots on the basis of the linear model
+aptakanplotall(cr.mean)
+
+## Plots on the basis of log linear model
+aptakanplotall(cr.mean, method = "loglm")
+
+## Plots on the basis of robust linear model
+aptakanplotall(cr.mean, method = "roblm")
+
+## Plots on the basis of log robust linear model
+aptakanplotall(cr.mean, method = "logroblm")
+@
+
+%------------------------------------------------------------------------------------------------------
+\section{To plot the diagnostic plots on the basis of linear model and log linear model, using ggplot2}
+%------------------------------------------------------------------------------------------------------
+The function \code{apta.dplotall} can be implemented to plot the diagnostic plots of analysis of
+data, based on the different statistical method, including, linear model and loglinear model. The
+function \code{apta.dplotall} is based on the function \code{apta.dplot}. The function \code{apta.dplotall} acts on the object of Class \code{aptakandt}, produced as a result after implementing the function \code{CombineReps}. Following is the example to plot the diagnostic plots:
+
+<<apta.dplotall,eval = FALSE>>=
+##To get all the first plot
+apta.dplotall(cr.mean)  ##linear model
+apta.dplotall(cr.mean, method = "loglm")
+
+## To get all the second plot
+apta.dplotall(cr.mean, plottype = "QQ")
+apta.dplotall(cr.mean, method = "loglm", plottype = "QQ")
+
+## To get all the third plot
+apta.dplotall(cr.mean, plottype = "SL")
+apta.dplotall(cr.mean, method = "loglm", plottype = "SL")
+
+## To get all the fourth plot
+apta.dplotall(cr.mean, plottype = "Cook")
+apta.dplotall(cr.mean, method = "loglm", plottype = "Cook")
+
+## To get all the fifth plot
+apta.dplotall(cr.mean, plottype = "RL")
+apta.dplotall(cr.mean, method = "loglm", plottype = "RL")
+
+## To get all the sixth plot
+apta.dplotall(cr.mean, plottype = "CL")
+apta.dplotall(cr.mean, method = "loglm", plottype = "CL")
+@
+
+
+%------------------------------------------------------------------------------------------------------
+\section{To plot the diagnostic plots on the basis of different statistical models, using plot}
+%----------------------------------------------------------------------------------------------------
+The function \code{apta.diagplot} can be implemented to plot the diagnostic plots of the analysis of data, based on different statistical methods, including, linear model, log linear model, robust linear model, robust log linear model and generalised linear model. The function \code{apta.diagplot} can be implemented on the object of Class \code{aptakandt}, produced as a result of implementation of the function \code{CombineReps}. Following is the example to implement the function \code{apta.diagplot}:
+
+<<apta.diagplot,eval=FALSE>>=
+## To plot on the basis of linear model
+apta.diagplot(cr.mean, which = 1:6)
+## To plot on the basis of log linear model
+apta.diagplot(cr.mean, method = "loglm", which = 1:6)
+## To plot on the basis of robust linear model
+apta.diagplot(cr.mean, method = "roblm", which = 1:5)
+## To plot on the basis of log robust linear model
+apta.diagplot(cr.mean, method = "logroblm", which = 1:5)
+## To plot on the basis of generalised linear model
+apta.diagplot(cr.mean, method = "glm", which = 1:5)
+@
+
+One can define the argument rowno, on the basis of the row no. of the combined replicates, which one
+wants to plot. The default is 1, that is the first row will be considered. For example, if I want
+to plot for the 2nd row of the combined replicates, then rowno will be equal to 2. Following is
+the example to clarify the concept of rowno:
+
+<<apta.diagplot, eval = FALSE>>=
+## To plot on the basis of linear model for row no. 2
+apta.diagplot(cr.mean, rowno =2, which= 1:6)
+## To plot on the basis of the log linear model for row no. 3
+apta.diagplot(cr.mean, rowno = 3, method = "loglm", which = 1:6)
+##To plot on the basis of robust linear model for row no. 4
+apta.diagplot(cr.mean, rowno = 4, method = "roblm", which = 1:5)
+## To plot on the basis of log robust linear model for row no. 4
+apta.diagplot(cr.mean, rowno = 4, method = "logroblm", which = 1:5)
+## To plot on the basis of glm model for row no. 2
+apta.diagplot(cr.mean, rowno =2, method = "glm", which = 1:5)
+@
+
+%-------------------------------------------------------------------------------
+\section{Compute the concentration from the fluorescence value}
+%-------------------------------------------------------------------------------
+The function \code{aptaconc} computes the concentration of the combined replicates which are
+produced as a result after implementing the function \code{aptamodelall}. One needs to provide
+the fluorescence for which the concentration is to be calculated. Following is the example to
+compute the concentration at fluorescence value of 1000, using the lm model:
+
+<<aptaconc>>=
+apta.conc.lm <- aptaconc(lm.result.all,fluo = 1000)
+## To express the result
+apta.conc.lm
+@
+
+
+Following is the example to compute the concentration at fluorescence value of 1000, using the lmrob
+model:
+<<aptaconc>>=
+apta.conc.lmrob <- aptaconc(roblm.result.all,fluo = 1000)
+# To express the result
+apta.conc.lmrob
+@
+
+
+Following is the example to compute the concentration at the fluorescence value of 1000, using the
+log linear model:
+<<aptaconc>>=
+apta.conc.loglm <- aptaconc(loglm.result.all,fluo = 1000, model = "loglm")
+## To express the result
+apta.conc.loglm
+@
+
+
+Following is the example to compute the concentration at the fluorescence value of 1000, using the
+log robust linear model:
+<<aptaconc>>=
+apta.conc.loglmrob <- aptaconc(logroblm.result.all,fluo = 1000, model = "loglm")
+## To express the result
+apta.conc.loglmrob
+@
+
+
+%-------------------------------------------------------------------------------
+\section{Compute the Dissociation constant (Kd)}
+%-------------------------------------------------------------------------------
+The function \code{apta.Kdall} computes the dissociation constant of the combined replicates, which are
+produced as a result after implementing the function \code{CombineReps}. The function also plots the
+fitting curve of dissociation constant. The function \code{apta.Kdall} is based on the function
+\code{apta.Kd}. The description of the function \code{apta.Kd} is provided in the section auxilliary
+functions. The format of the files .txt Tab delimited and .csv are provided in the folder exData
+of folder inst in the package \pkg{AptaKan}. Generally, the dissociation constant is computed by two
+different methods: 1. Sigmoidal model, which includes the suqare of the substrate concentration
+(Fluorescence vs square of substrate concentration) and 2. Non-sigmoidal Model, which includes the
+Fluorescence vs substrate concentration. The function computes the dissociation constant by two different methods (sigmoidal model and non-sigmoidal model) and correlation between the original and predicted values as well as plots the fitting curve of dissociation constant. The following is the example to compute the dissociation constant and correlation and plot the simulation (fitting) plots, on the basis of the sigmoidal model and non-sigmoidal model:
+
+<<apta.Kdall, results=hide>>=
+##To read the .csv file
+file.kd <- system.file("exData", "aptakdnew.csv", package = "AptaKan")
+read.datacsv <- ReadAptakan(file.kd)
+## To combine the replicates
+kd.rep.mean <- CombineReps(read.datacsv)
+## To express the combined replicates
+kd.rep.mean
+@
+
+To compute the dissociation constant by sigmoidal model:
+<<apta.Kdall, results=hide>>=
+## To compute the dissociation constant by sigmoidal model
+kd <- apta.Kdall(kd.rep.mean, kdstart = 1)
+## To express all the resulting data
+kd
+@
+
+<<apta.Kdall>>=
+##To express the dissociation constant and correlation
+slot(kd,"KdData")
+@
+
+To plot the fitting results of sigmoidal model and generate the pdf file of plots:
+<<apta.Kdall, eval=FALSE>>=
+## To plot the fitting results
+apta.Kdall(kd.rep.mean, plot = "yes", kdstart = 1)
+@
+
+To compute the dissociation constant by non-sigmoidal model:
+<<apta.Kdall, results=hide>>=
+## To compute the dissociation constant by non-sigmoidal model
+kd.nonsig <- apta.Kdall(kd.rep.mean, method = "non-sig", kdstart = 1)
+## To express all the resulting data
+kd.nonsig
+@
+
+<<apta.Kdall>>=
+## To visualise the dissociation constant and correlation
+slot(kd.nonsig,"KdData")
+@
+
+To plot the fitting results of the non-sigmoidal model and generate the pdf file of plots:
+<<apta.Kdall, eval = FALSE>>=
+## To plot the fitting results
+apta.Kdall(kd.rep.mean, plot = "yes", method = "non-sig", kdstart = 1)
+@
+
+%-------------------------------------------------------------------------------
+\section{Auxilliary Functions}
+%-------------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------------
+\subsection{aptamodel}
+%-------------------------------------------------------------------------------
+The function \code{aptamodel} is an auxilliary function to the function \code{aptamodelall}.
+We recommned to implement the function \code{aptamodelall} directly. The function \code{aptamodel}
+can be implemeted for a single compbined replicate. While, the function \code{aptamodelall}
+can be implemented for all the combined replicates, whether the combined replicates are one
+or more to do the computation in a single step. Following is the example to implement the function
+\code{aptamodel}:
+
+<<aptamodel, eval = FALSE>>=
+###aptamodel
+##To analyse the data on the basis of linear model
+lm.result <- aptamodel(cr.mean)
+lm.result ##To express the result
+## To analyse the data on the basis of log linear model
+loglm.result <- aptamodel(cr.mean, method = "loglm")
+loglm.result
+## To analyse the data on the basis of robust linear model
+roblm.result <- aptamodel(cr.mean, method = "roblm")
+roblm.result
+## To analyse the data on the basis of log robust linear model
+logroblm.result <- aptamodel(cr.mean, method = "logroblm")
+logroblm.result
+## To analyse the data on the basis of generalised linear model
+glm.result <- aptamodel(cr.mean, method = "glm", result = "glm")
+glm.result
+@
+
+%-------------------------------------------------------------------------------
+\subsection{aptakanplot}
+%-------------------------------------------------------------------------------
+The function \code{aptakanplot} is an auxilliary function to the function \code{aptakanplotall}.
+We recommend to implement the function \code{aptakanplotall}, instead of the function
+\code{aptakanplot}, because the function \code{aptakanplotall} can be implemented on one or more
+combined replicates to generate the results in a single step. The function \code{aptakanplot} also
+acts on the object of the Class \code{aptakandt}, produced as an output of the function
+\code{CombineReps}. Following code can be used to implement the function \code{aptakanplot}:
+
+<<aptakanplot,eval = FALSE>>=
+### To plot the analysis of data
+## On the basis of the linear model
+lm.plot <- aptakanplot(cr.mean)
+lm.plot
+
+## On the basis of the log linear model
+loglm.plot <- aptakanplot(cr.mean, method = "loglm", main = "lm(log(y)~x)")
+loglm.plot
+
+##on the basis of robust linear model
+roblm.plot <- aptakanplot(cr.mean, method = "roblm", main = "lmrob(y~x)")
+roblm.plot
+
+## On the basis of the log robust linear model
+logroblm.plot <- aptakanplot(cr.mean, method = "logroblm", main = "lmrob(log(y)~x)")
+logroblm.plot
+@
+
+%-------------------------------------------------------------------------------
+\subsection{apta.Kd}
+%-------------------------------------------------------------------------------
+The function \code{apta.Kd} is an auxilliary function to the function \code{apta.Kdall}. The function
+\code{apta.Kd} can be directly implemented through the function \code{apta.Kdall}. Therefore, we recommend to implement the function \code{apta.Kdall}instead of the function \code{apta.Kd}, because the function \code{apta.Kdall} is designed to compute the results of all the combined replicates in a single step, whether the combined replicates are one or more. Following is the example to implement the function \code{apta.Kd}:
+
+<<apta.Kd,eval = FALSE>>=
+## To implement the apta.Kd
+file1 <- system.file("exData", "aptakdnew.csv", package = "AptaKan")
+read.datacsv <- ReadAptakan(file1)
+## To combine the replicates on the basis of mean
+## (replicates can also be combined on the basis of the median, but we
+## recommend to combine the replicates on the basis of the mean, because that's
+## the standard way to compute the dissociation constant)
+kd.rep1.mean <- CombineReps(read.datacsv)
+kd.rep1.mean ## To express all the data
+slot(kd.rep1.mean,"crepData")  ##To express the combined replicates
+kd.rep.median <- CombineReps(read.datacsv)
+kd.rep.median ## To express all the data
+slot(kd.rep.median,"crepData") ## To express the combined replicates
+## To compute the dissociation constant by sigmoidal model
+kd <- apta.Kd(kd.rep1.mean, kdstart = 1)
+kd ## To express the results
+kd.median <- apta.Kd(kd.rep.median, kdstart = 1)
+kd.median ## To express the results
+## To plot the fitting results of the sigmoidal model
+apta.Kd(kd.rep1.mean, plot = "yes", kdstart = 1)
+apta.Kd(kd.rep.median, plot = "yes", kdstart = 1)
+## To compute the dissociation constant by non-sigmoidal model
+kd.nonsig <- apta.Kd(kd.rep1.mean, method = "non-sig", kdstart = 1)
+## To express the final results
+kd.nonsig
+kd.nonsig.median <- apta.Kd(kd.rep.median, method = "non-sig", kdstart = 1)
+## To express the final results
+kd.nonsig.median
+## To plot the fitting results of the sigmoidal model
+apta.Kd(kd.rep.median, plot = "yes", method = "non-sig")
+apta.Kd(kd.rep.median, plot = "yes", method = "non-sig")
+@
+
+
+%-------------------------------------------------------------------------------
+\subsection{apta.dplot}
+%-------------------------------------------------------------------------------
+The function \code{apta.dplot} is an auxilliary function to the function \code{apta.dplotall}.In a
+similar way, like other functions \code{aptamodelall} and \code{apta.Kdall}, we recommend to
+implement the function \code{apta.dplotall}, instead of the function \code{apta.dplot}. Following is
+the code to implement the function \code{apta.dplot}:
+
+<<apta.dplot,eval=FALSE>>=
+##To get first plot
+apta.dplot(cr.mean)  ##linear model
+apta.dplot(cr.mean, method = "loglm")
+
+## To get second plot
+apta.dplot(cr.mean, plottype = "QQ")
+apta.dplot(cr.mean, method = "loglm", plottype = "QQ")
+
+## To get third plot
+apta.dplot(cr.mean, plottype = "SL")
+apta.dplot(cr.mean, method = "loglm", plottype = "SL")
+
+## To get fourth plot
+apta.dplot(cr.mean, plottype = "Cook")
+apta.dplot(cr.mean, method = "loglm", plottype = "Cook")
+
+## To get fifth plot
+apta.dplot(cr.mean, plottype = "RL")
+apta.dplot(cr.mean, method = "loglm", plottype = "RL")
+
+## To get sixth plot
+apta.dplot(cr.mean, plottype = "CL")
+apta.dplot(cr.mean, method = "loglm", plottype = "CL")
+@
+
+
+%-------------------------------------------------------------------------------
+\section{Graphical User Interfaces (GUIs)}
+%-------------------------------------------------------------------------------
+Graphical user interfaces are designed, through shiny app,to implement the functions in
+a user friendly way and to generate the dynamic reports of the results. This section can
+be divided into two parts, which are as follows:
+%----------------------------------------------------------------------------------
+\subsection{GUI for analysis, computation of confidence interval and concentration}
+%----------------------------------------------------------------------------------
+This graphical user interface is designed for the purpose of the analysis of the data through
+different statistical models and to compute the confidence interval and concentration from
+the fluorescence. One can download the dynamic report in html format after implementation, which
+will be automatically saved in the folder analysis.gui in folder inst of the package aptakan. The
+graphical user interface can be launched in an easy way through the function \code{analysis.gui}.
+Following is the example to launch the graphical user interface:
+
+<<analysis.gui, eval = FALSE>>=
+## To launch the graphical user interface
+analysis.gui()
+@
+
+%-------------------------------------------------------------------------
+\subsection{GUI for computation of dissociation constant and correlation}
+%-------------------------------------------------------------------------
+This graphical user interface is designed to implement the concepts of the computation of the
+dissociation constant and correlation between the original and predicted values. Here, also, the
+user can download the dynamic report in html format, which will be saved in the folder kd.gui in
+folder inst of the package aptakan. The graphical user interface can be launched in an easy way
+through the function \code{Kd.gui}. Following is the example to launch the grapphical user interface:
+
+<<Kd.gui, eval = FALSE>>=
+## To launch the graphical user interface
+Kd.gui()
+@
+
+
+%-------------------------------------------------------------------------------
+\section{Report generation of the plots}
+%-------------------------------------------------------------------------------
+The .Rmd files are provided in the folder Plotreport of the package \pkg{AptaKan}. It has two .Rmd files, one is Modelplot.Rmd. Here, the example is shown with the file aptakdnew.csv, which is present in the folder exData of folder inst of package \pkg{AptaKan}. To generate the pdf report, one can use knit to pdf, while to generate the html report, one can use knit to html. The resulting examples are shown in the files Modelplot in two formats of pdf and html. The another file is Kdplot.Rmd, which is also present in the same folder Plotreport. This is designed to generate the plots of dissociation constant. The resulting examples are shown in the files, Kdplot in the formats of pdf and html.
+
+%-------------------------------------------------------------------------------
+\end{document}

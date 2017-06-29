@@ -1,0 +1,28 @@
+Fitting plots of dissociation constant
+--------------------------------------
+  
+  Date: `r Sys.time()`
+--------------------------------------
+  
+  ````{r, echo=FALSE, include = FALSE}
+require(ggplot2)
+require(AptaKan)
+file1 <- system.file("exData", "aptakdnew.csv", package = "AptaKan")
+read.data <- ReadAptakan(file1)
+cr.mean <- CombineReps(read.data, calc = "Mean")
+````
+
+-------------------------------------------
+Kd Plots (Sigmoidal Model)
+-------------------------------------------
+  ````{r, echo=FALSE}
+apta.Kdall(cr.mean, plot = "yes")
+````
+
+-------------------------------------------
+Kd Plots (Non - Sigmoidal Model)
+-------------------------------------------
+  ````{r, echo=FALSE}
+apta.Kdall(cr.mean, plot = "yes", method = "non-sig")
+````
+

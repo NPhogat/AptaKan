@@ -1,0 +1,70 @@
+Plots of the analysis of data
+-------------------------------
+  
+  Date: `r Sys.time()`
+-------------------------------
+
+  ````{r, echo=FALSE, include = FALSE}
+require(ggplot2)
+require(AptaKan)
+file1 <- system.file("exData", "aptakdnew.csv", package = "AptaKan")
+read.data <- ReadAptakan(file1)
+cr.mean <- CombineReps(read.data, calc = "Mean")
+cr.median <- CombineReps(read.data, calc = "Median")
+````
+
+-------------------------------------------
+lm Plots
+-------------------------------------------
+  ````{r, echo=FALSE}
+aptakanplotall(cr.mean, method = "lm")
+````
+
+-------------------------------------------
+loglm Plots
+-------------------------------------------
+  ````{r, echo=FALSE}
+aptakanplotall(cr.mean, method = "loglm")
+````
+
+-------------------------------------------
+roblm Plots
+-------------------------------------------
+  ````{r, echo=FALSE}
+aptakanplotall(cr.mean, method = "roblm")
+```` 
+
+--------------------------------------------
+logroblm Plots
+-------------------------------------------
+  ````{r, echo=FALSE}
+aptakanplotall(cr.mean, method = "logroblm")
+````
+
+-----------------------------------------------
+lm Plots (Combined replicates, based on median)
+-----------------------------------------------
+  ````{r, echo=FALSE, echo = FALSE}
+aptakanplotall(cr.median, method = "lm")
+````
+
+--------------------------------------------------
+loglm Plots (Combined replicates, based on median)
+--------------------------------------------------
+  ````{r, echo=FALSE, echo = FALSE}
+aptakanplotall(cr.median, method = "loglm")
+````
+
+--------------------------------------------------
+roblm Plots (Combined replicates, based on median)
+--------------------------------------------------
+  ````{r, echo=FALSE, echo = FALSE}
+aptakanplotall(cr.median, method = "roblm")
+```` 
+
+-----------------------------------------------------
+logroblm Plots (Combined replicates, based on median)
+-----------------------------------------------------
+  ````{r, echo=FALSE, echo = FALSE}
+aptakanplotall(cr.median, method = "logroblm")
+````

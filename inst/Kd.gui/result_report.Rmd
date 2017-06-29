@@ -1,0 +1,52 @@
+Analysis of data, confidence intervals and concentration calculation
+--------------------------------------------------------------------------
+
+Date: `r Sys.time()`
+-----------------------------------------
+
+Initial Data:
+-----------------------------------------
+````{r, echo=FALSE}
+x <- file()
+knitr::kable(x, format = "markdown")
+````
+
+Concentration:
+-------------------------------------------------------------------------------------------
+````{r, echo=FALSE, results='asis'}
+x <- fileconc()
+knitr::kable(x, format = "markdown")
+````
+
+Combine Replicates:
+------------------------------------------------------------------------------------
+````{r, echo=FALSE, results='asis'}
+x <- crep()
+knitr::kable(x,format = "markdown")
+````
+
+Kd and Correlation:
+------------------------------------------------------------------------------------
+````{r, echo=FALSE, results='asis'}
+x <- kd()
+knitr::kable(x, format = "markdown")
+````
+
+Settings used during implementation:
+--------------------------------------------
+````{r, echo=FALSE, results='asis'}
+cat("Select the type of file: ", input$filetype, "\n\n")
+cat("Select the method to combine replicates: ", input$calc, "\n\n")
+cat("Select Kd computing method: ", input$method, "\n\n")
+cat("Initial value to compute Kd: ", input$Kdstart, "\n\n")
+````
+
+Session Information:
+--------------------------------------------
+````{r, echo=FALSE, results='asis'}
+sessionInfo("AptaKan")
+````
+
+
+
+
