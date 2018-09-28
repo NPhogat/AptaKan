@@ -1,8 +1,8 @@
 import(Biobase, methods, ggplot2, stats, RColorBrewer, graphics)
 
 importFrom(shiny, runApp)
-importFrom(gridExtra, arrangeGrob, cbind.gtable, ellipseGrob, grid.arrange, grid.ellipse, grid.ngon,
-           grid.table, marrangeGrob, ngonGrob, polygon_regular, rbind.gtable,
+importFrom(gridExtra, arrangeGrob, gtable_cbind, ellipseGrob, grid.arrange, grid.ellipse, grid.ngon,
+           grid.table, marrangeGrob, ngonGrob, polygon_regular, gtable_rbind,
            tableGrob, ttheme_default, ttheme_minimal)
 importFrom(robustbase, BYlogreg, colMedians,lmrob)
 
